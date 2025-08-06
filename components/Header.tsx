@@ -1,11 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  profileImage?: string;
+}
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch("/api/auth/me");
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(user);
+
+  const handleSignOut = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setUser(null);
+        router.push("/auth/signin");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const getDashboardLink = () => {
+    if (!user) return "/";
+    return user.role === "LAWYER" ? "/dashboard/lawyer" : "/dashboard/client";
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
@@ -45,7 +97,6 @@ export default function Header() {
             >
               Browse Lawyers
             </Link>
-
             <Link
               href="/register-lawyer"
               className="text-gray-700 hover:text-navy-600 font-medium transition-colors"
@@ -67,20 +118,61 @@ export default function Header() {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/auth/signin"
-              className="px-4 py-2 text-navy-600 border border-navy-600 rounded-lg hover:bg-navy-50 transition-colors font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="px-4 py-2 bg-navy-600 text-white rounded-lg hover:bg-navy-700 transition-colors font-medium"
-            >
-              Sign Up
-            </Link>
-          </div>
+          {!loading && (
+            <div className="hidden md:flex items-center space-x-4">
+              {user ? (
+                <div className="flex items-center space-x-4">
+                  <Link
+                    href={getDashboardLink()}
+                    className="text-gray-700 hover:text-navy-600 font-medium transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-navy-600 font-medium transition-colors"
+                  >
+                    {user.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-navy-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">
+                          {user.name?.charAt(0)?.toUpperCase() || "U"}
+                        </span>
+                      </div>
+                    )}
+                    <span>{user.name}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <Link
+                    href="/auth/signin"
+                    className="px-4 py-2 text-navy-600 border border-navy-600 rounded-lg hover:bg-navy-50 transition-colors font-medium"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="px-4 py-2 bg-navy-600 text-white rounded-lg hover:bg-navy-700 transition-colors font-medium"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Mobile menu button */}
           <button
@@ -129,7 +221,6 @@ export default function Header() {
               >
                 Browse Lawyers
               </Link>
-
               <Link
                 href="/register-lawyer"
                 className="text-gray-700 hover:text-navy-600 font-medium"
@@ -148,20 +239,49 @@ export default function Header() {
               >
                 Contact
               </Link>
-              <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                <Link
-                  href="/auth/signin"
-                  className="px-4 py-2 text-center text-navy-600 border border-navy-600 rounded-lg hover:bg-navy-50 transition-colors font-medium"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="px-4 py-2 text-center bg-navy-600 text-white rounded-lg hover:bg-navy-700 transition-colors font-medium"
-                >
-                  Sign Up
-                </Link>
-              </div>
+
+              {!loading && (
+                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                  {user ? (
+                    <>
+                      <Link
+                        href={getDashboardLink()}
+                        className="px-4 py-2 text-center text-navy-600 border border-navy-600 rounded-lg hover:bg-navy-50 transition-colors font-medium"
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className="px-4 py-2 text-center text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="px-4 py-2 text-center bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/auth/signin"
+                        className="px-4 py-2 text-center text-navy-600 border border-navy-600 rounded-lg hover:bg-navy-50 transition-colors font-medium"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/auth/signup"
+                        className="px-4 py-2 text-center bg-navy-600 text-white rounded-lg hover:bg-navy-700 transition-colors font-medium"
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

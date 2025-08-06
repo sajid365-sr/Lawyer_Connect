@@ -13,14 +13,13 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
-import { auth } from "@/auth";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 const ClientDashboard: React.FC = () => {
-  const { data: session, status } = useSession();
+  const { data } = useSession();
 
-  console.log(session?.user);
+  console.log(data?.user);
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "bookings" | "payments" | "favorites"
@@ -155,7 +154,7 @@ const ClientDashboard: React.FC = () => {
             </p>
           </div>
         </div>
-        {session?.user && (
+        {data?.user && (
           <Image
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnFRPx77U9mERU_T1zyHcz9BOxbDQrL4Dvtg&s"
             alt=""

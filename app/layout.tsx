@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Find Your Lawyer - Legal Services Platform",
-  description: "Connect with verified lawyers in real time. Book consultations, video calls, and manage legal services seamlessly.",
+  description:
+    "Connect with verified lawyers in real time. Book consultations, video calls, and manage legal services seamlessly.",
 };
 
 export default async function RootLayout({
@@ -20,9 +21,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SessionProvider session={session}>
-          {children}
-        </SessionProvider>
+        <SessionProvider session={session}>{children}</SessionProvider>
       </body>
     </html>
   );

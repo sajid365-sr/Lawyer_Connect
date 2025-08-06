@@ -15,9 +15,29 @@ model User {
   password      String?
   image         String?
   role          String?   // "CLIENT" or "LAWYER"
+  
+  // Profile fields
+  phone         String?
+  address       String?
+  city          String?
+  country       String?
+  profileImage  String?   // Cloudinary URL
+  bio           String?
+  
+  // Lawyer-specific fields
   barNumber     String?   // For lawyers only
   district      String?   // For lawyers only
   experience    String?   // For lawyers only
+  specializations String[] // Array of specializations
+  education     String?   // Educational background
+  certifications String[] // Professional certifications
+  languages     String[]  // Languages spoken
+  consultationFee Float?  // Hourly rate
+  availability  String?   // Available hours/days
+  
+  // Profile completion status
+  profileCompleted Boolean @default(false)
+  
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())

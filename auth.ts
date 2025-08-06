@@ -5,8 +5,6 @@ import Facebook from "next-auth/providers/facebook";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./lib/prisma";
 import { compare } from "bcryptjs";
-import { clientSignupSchema } from "./lib/validations/client";
-import { lawyerSignupSchema } from "./lib/validations/lawyer";
 
 declare module "next-auth" {
   interface Session {
@@ -117,7 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // For OAuth users, set default role as CLIENT
         if (!token.role) {
           token.role = "CLIENT";
-          
+
           // Update user in database with default role
           try {
             await prisma.user.update({
@@ -151,7 +149,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       console.log("New user created:", user.email);
     },
     async signIn({ user, account, isNewUser }) {
-      console.log("User signed in:", user.email, "Provider:", account?.provider);
+      console.log(
+        "User signed in:",
+        user.email,
+        "Provider:",
+        account?.provider
+      );
     },
   },
 });

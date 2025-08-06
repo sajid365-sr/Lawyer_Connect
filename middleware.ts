@@ -6,6 +6,8 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const userRole = req.auth?.user?.role;
 
+  console.log("Logged In ===============", req.auth);
+
   // Public routes that don't require authentication
   const publicRoutes = [
     "/",
@@ -26,11 +28,7 @@ export default auth((req) => {
   ];
 
   // Protected routes that require authentication
-  const protectedRoutes = [
-    "/dashboard",
-    "/booking",
-    "/call",
-  ];
+  const protectedRoutes = ["/dashboard", "/booking", "/call"];
 
   // Admin routes
   const adminRoutes = ["/admin"];
@@ -39,15 +37,16 @@ export default auth((req) => {
   const clientRoutes = ["/dashboard/client", "/booking"];
   const lawyerRoutes = ["/dashboard/lawyer"];
 
-  const isPublicRoute = publicRoutes.some(route => 
-    nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
+  const isPublicRoute = publicRoutes.some(
+    (route) =>
+      nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
   );
-  
+
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-  const isProtectedRoute = protectedRoutes.some(route => 
+  const isProtectedRoute = protectedRoutes.some((route) =>
     nextUrl.pathname.startsWith(route)
   );
-  const isAdminRoute = adminRoutes.some(route => 
+  const isAdminRoute = adminRoutes.some((route) =>
     nextUrl.pathname.startsWith(route)
   );
 
@@ -71,26 +70,26 @@ export default auth((req) => {
     }
   }
 
-  // Handle dashboard route redirection based on role
-  if (nextUrl.pathname === "/dashboard" && isLoggedIn) {
-    if (userRole === "LAWYER") {
-      return NextResponse.redirect(new URL("/dashboard/lawyer", nextUrl));
-    } else if (userRole === "CLIENT") {
-      return NextResponse.redirect(new URL("/dashboard/client", nextUrl));
-    }
-  }
+  // // Handle dashboard route redirection based on role
+  // if (nextUrl.pathname === "/dashboard" && isLoggedIn) {
+  //   if (userRole === "LAWYER") {
+  //     return NextResponse.redirect(new URL("/dashboard/lawyer", nextUrl));
+  //   } else if (userRole === "CLIENT") {
+  //     return NextResponse.redirect(new URL("/dashboard/client", nextUrl));
+  //   }
+  // }
 
   // Role-based access control
   if (isLoggedIn) {
     // Check client-specific routes
-    if (clientRoutes.some(route => nextUrl.pathname.startsWith(route))) {
+    if (clientRoutes.some((route) => nextUrl.pathname.startsWith(route))) {
       if (userRole !== "CLIENT") {
         return NextResponse.redirect(new URL("/dashboard", nextUrl));
       }
     }
 
     // Check lawyer-specific routes
-    if (lawyerRoutes.some(route => nextUrl.pathname.startsWith(route))) {
+    if (lawyerRoutes.some((route) => nextUrl.pathname.startsWith(route))) {
       if (userRole !== "LAWYER") {
         return NextResponse.redirect(new URL("/dashboard", nextUrl));
       }
